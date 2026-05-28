@@ -1,0 +1,17 @@
+.DS_Store
+.env
+.env.*
+*.log
+*.tmp
+*.bak
+*.swp
+node_modules/
+dist/
+build/
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/

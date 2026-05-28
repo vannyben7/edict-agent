@@ -1,0 +1,6 @@
+interface:
+  display_name: "Edict Agent"
+  short_description: "Multi-agent dispatch with strict review gates"
+  default_prompt: "Use $edict-agent to decide whether to split this large task across subagents, then run strict evidence-based review before reporting."
+policy:
+  allow_implicit_invocation: true
