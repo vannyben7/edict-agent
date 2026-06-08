@@ -1,10 +1,10 @@
 # Edict Agent
 
-Edict Agent is a Codex skill for complex, ambiguous, high-risk, or cross-module tasks. It gives Codex a strict action plan for deciding when to use subagents, how to assign them, how to review their outputs, and how the main agent should remain accountable for the final result.
+Edict Agent is a Codex skill for complex, ambiguous, high-risk, cross-module, or parallelizable tasks. It gives Codex a strict action plan for running a qiushi/workflows preflight, splitting work into conflict-safe delivery slices when useful, reviewing worker outputs, and keeping the main agent accountable for the final result.
 
 This skill is inspired by the logic of the **Three Departments and Six Ministries** system, known in Chinese as **三省六部制**. The goal is not to roleplay an ancient bureaucracy. The goal is to borrow its governance logic: separation of planning, review, execution, and final responsibility.
 
-In practical terms, Edict Agent defines a small set of rules for improving the relationship between the Codex main agent and subagents during complex work. Subagents can investigate, challenge, implement, or verify, but they do not own the final answer. The main Codex agent must plan, delegate, audit, integrate, test, and report.
+In practical terms, Edict Agent defines a small set of rules for improving the relationship between the Codex main agent and subagents during complex work. Subagents can investigate, challenge, implement, or verify, but they do not own the final answer. The main Codex agent must run the preflight, cut file-exclusive slices, delegate, audit, integrate, test, and report.
 
 ## Why This Skill Exists
 
@@ -16,7 +16,7 @@ Large AI coding or research tasks often fail for predictable reasons:
 - Implementation happens before the problem is properly scoped.
 - Final answers sound confident even when some parts were not verified.
 
-Edict Agent addresses these failure modes by turning multi-agent work into a governed process. It asks Codex to decide whether delegation is useful, assign narrow roles, require evidence, inspect diffs, run checks when possible, and disclose residual risk.
+Edict Agent addresses these failure modes by turning multi-agent work into a governed process. It asks Codex to start with a lightweight qiushi preflight, prefer deliverable worker slices over vague exploration, assign non-overlapping ownership, require evidence, inspect diffs, run checks when possible, and disclose residual risk.
 
 ## Three Departments and Six Ministries Logic
 
@@ -25,10 +25,10 @@ The historical 三省六部制 separated state work into planning, review, and e
 | Historical Logic | Edict Agent Interpretation |
 | --- | --- |
 | Edict / imperial command | The user's goal, constraints, and acceptance criteria |
-| 中书省 / drafting | The main agent turns the request into a concrete plan |
+| 中书省 / drafting | The main agent turns the request and qiushi preflight into a concrete plan |
 | 门下省 / review and rejection | Reviewer or verifier logic challenges assumptions and checks evidence |
-| 尚书省 / administration | The main agent dispatches scoped work and coordinates execution |
-| 六部 / specialized ministries | Subagents handle bounded investigation, implementation, review, or verification |
+| 尚书省 / administration | The main agent dispatches scoped work and coordinates integration |
+| 六部 / specialized ministries | Workers handle bounded delivery slices; explorers, reviewers, and verifiers support when useful |
 | 回奏 / report back | The main agent reports changes, validation, unknowns, and residual risk |
 
 This structure creates productive friction. Planning is separated from review. Execution is scoped. Verification is explicit. The final response is not simply what a subagent claimed; it is what the main agent can defend with evidence.
@@ -39,10 +39,11 @@ Edict Agent treats the main Codex agent as the accountable owner.
 
 The main agent must:
 
-- Decide whether the task actually needs subagents.
-- Convert the request into acceptance criteria and likely affected areas.
-- Split work only along natural ownership boundaries.
-- Give subagents narrow objectives, context, scope, boundaries, and output expectations.
+- Run a lightweight qiushi/workflows preflight before delegation.
+- Convert the request and preflight into acceptance criteria and likely affected areas.
+- Split work only along natural, non-overlapping ownership boundaries.
+- Keep shared entrypoints, configuration, lockfiles, generated manifests, and cross-cutting integration under one clear owner.
+- Give workers narrow objectives, context, exclusive scope, forbidden scope, and output expectations.
 - Treat subagent outputs as proposals, not final truth.
 - Re-read important files or evidence before integrating conclusions.
 - Inspect final diffs for code changes.
@@ -54,14 +55,14 @@ Subagents may:
 
 - Explore unfamiliar code, data, documents, or architecture.
 - Review a plan, diff, claim, paper section, or API contract.
-- Implement one clearly scoped subsystem or artifact.
+- Implement one clearly scoped subsystem, file group, artifact, or document section.
 - Verify behavior through tests, reproduction steps, logs, screenshots, or source evidence.
 
 Subagents must not:
 
 - Own the final answer.
 - Modify unrelated files.
-- Work in overlapping areas without coordination.
+- Work in overlapping files, directories, artifacts, or document sections without coordination.
 - Replace direct evidence with confidence.
 - Cause the main agent to skip review.
 
@@ -69,52 +70,55 @@ Subagents must not:
 
 Edict Agent defines four common subagent roles:
 
-- **Explorer**: read-only investigation of architecture, call chains, failing behavior, data sources, or test coverage.
+- **Worker**: scoped implementation for one feature point, subsystem, file group, artifact, or document section with exclusive ownership.
+- **Explorer**: read-only investigation of architecture, call chains, failing behavior, data sources, or test coverage. Use this when ownership boundaries are unclear.
 - **Reviewer**: skeptical audit of a plan, diff, paper section, migration, API contract, or UI behavior.
-- **Worker**: scoped implementation for one subsystem or artifact with clear ownership.
 - **Verifier**: targeted checking through tests, reproduction, smoke checks, rendered output, logs, or other evidence.
 
-The default posture is conservative: use Explorer or Reviewer first when the task is unclear, then use Worker only after ownership boundaries are clear.
+The default posture is delivery-oriented but conflict-aware: look for useful worker slices, use explorers only when boundaries are not yet knowable, and keep final integration with the main agent.
 
 ## Strict Action Plan
 
 When Edict Agent is triggered, Codex follows this action plan:
 
-1. **Triage the request**
-   Decide whether the task is large, high-risk, cross-module, ambiguous, or parallelizable enough to justify delegation.
+1. **Qiushi preflight**
+   Identify the current situation, key constraints, main contradiction or bottleneck, acceptance criteria, verification signals, candidate delivery slices, and shared artifacts that must stay under main-agent ownership.
 
 2. **Draft the edict**
-   Convert the user request into goals, constraints, acceptance criteria, likely affected areas, and verification commands.
+   Convert the user request and preflight into goals, constraints, acceptance criteria, likely affected areas, worker slices, and verification commands.
 
-3. **Plan the ministries**
-   Split work by natural boundaries such as subsystem, file group, research question, test surface, or artifact type.
+3. **Plan file-exclusive ministries**
+   Split work by natural boundaries such as subsystem, file group, research question, test surface, artifact type, or document section. Do not assign overlapping write ownership.
 
-4. **Dispatch subagents**
-   Assign narrow roles with objective, context, scope, boundaries, and expected output. Avoid overlapping write ownership.
+4. **Choose fanout**
+   Use one agent for simple tasks, 2-6 workers for medium tasks with clean boundaries, and more only when the work is highly decomposable.
 
-5. **Review gate**
-   Treat subagent output as a proposal. Require evidence for important claims. Re-read important files, logs, sources, or diffs.
+5. **Dispatch delivery workers**
+   Assign narrow roles with objective, context, exclusive scope, forbidden scope, coordination rules, and expected output.
 
-6. **Integrate and verify**
+6. **Conflict gate**
+   Check for overlapping file, directory, artifact, or document ownership before edits begin. Re-slice or keep shared work with the main agent when needed.
+
+7. **Review gate**
+   Treat worker output as a proposal. Require evidence for important claims. Re-read important files, logs, sources, or diffs.
+
+8. **Integrate and verify**
    The main agent performs final edits, inspects the diff, runs relevant checks when feasible, and resolves contradictions.
 
-7. **Final audit**
-   Before answering, the main agent checks scope, evidence, diff, tests, unverified items, and residual risk.
-
-8. **Report compactly**
-   The final answer explains what was delegated, what changed or was learned, what was verified, what could not be verified, and what risk remains.
+9. **Final audit**
+   Before answering, the main agent checks scope, evidence, diff, tests, unverified items, residual risk, and conflict avoidance.
 
 ## Strict Review Gates
 
 For large, user-facing, security-sensitive, financial, legal, cross-module, or high-risk work, Edict Agent requires stricter review:
 
-- Important findings should include file paths, line numbers, command outputs, source links, screenshots, logs, or other primary evidence when available.
+- Important worker or reviewer findings should include file paths, line numbers, command outputs, source links, screenshots, logs, or other primary evidence when available.
 - Code changes require final diff inspection.
 - Relevant tests, type checks, linters, renders, or smoke checks should be run when feasible.
 - If checks cannot be run, the final answer should state what remains unverified.
 - High-risk tasks should use at least one Reviewer or Verifier subagent when subagents are available.
 - "A subagent says so" is not sufficient evidence.
-- Conflicting subagent conclusions must be resolved against primary artifacts.
+- Conflicting worker, reviewer, or verifier conclusions must be resolved against primary artifacts.
 
 ## Install
 
@@ -127,12 +131,14 @@ cp -R skill/edict-agent "${CODEX_HOME:-$HOME/.codex}/skills/edict-agent"
 
 Then start a new Codex session so the skill can be discovered.
 
+Edict Agent can use the installed `workflows` skill as its qiushi workflow source when available, typically at `${CODEX_HOME:-$HOME/.codex}/skills/workflows/SKILL.md`. If that skill is unavailable, Edict Agent still runs the compact preflight described in `SKILL.md`.
+
 ## Use
 
 Explicit invocation:
 
 ```text
-Use $edict-agent to decide whether to split this task across subagents and run strict review before reporting.
+Use $edict-agent to run a lightweight qiushi/workflows preflight, split this task into file-exclusive parallel worker slices where safe, then integrate and review with strict evidence gates.
 ```
 
 Implicit invocation is enabled in `skill/edict-agent/agents/openai.yaml`, so Codex can also use it when a task is large, ambiguous, cross-module, high-risk, or parallelizable.
@@ -141,11 +147,11 @@ Implicit invocation is enabled in `skill/edict-agent/agents/openai.yaml`, so Cod
 
 # Edict Agent 中文说明
 
-Edict Agent 是一个面向 Codex 的 skill，用于处理复杂、模糊、高风险、跨模块或适合并行拆解的任务。它为 Codex 制定一套严格行动计划：什么时候应该使用子 agent，如何分派子 agent，如何审查子 agent 的结论，以及主 agent 如何对最终结果负责。
+Edict Agent 是一个面向 Codex 的 skill，用于处理复杂、模糊、高风险、跨模块或适合并行拆解的任务。它为 Codex 制定一套严格行动计划：先运行 qiushi/workflows 预检，再在安全时把工作拆成不冲突的交付切片，审查 worker 输出，并确保主 agent 对最终结果负责。
 
 这个 skill 参考了中国古代 **三省六部制** 的治理逻辑。它不是为了做古风角色扮演，而是借用其中更重要的制度思想：**规划、审核、执行、归责相互分离，但最终责任必须清楚**。
 
-在实际使用中，Edict Agent 会规范 Codex 主 agent 与子 agent 的关系。子 agent 可以调查、质疑、实现或验证，但不能替代主 agent 对最终答案负责。主 agent 必须完成规划、分派、审查、整合、测试和最终汇报。
+在实际使用中，Edict Agent 会规范 Codex 主 agent 与子 agent 的关系。子 agent 可以调查、质疑、实现或验证，但不能替代主 agent 对最终答案负责。主 agent 必须完成预检、切出文件独占的工作边界、分派、审查、整合、测试和最终汇报。
 
 ## 为什么需要这个 Skill
 
@@ -157,7 +163,7 @@ Edict Agent 是一个面向 Codex 的 skill，用于处理复杂、模糊、高�
 - 问题还没界定清楚就开始实现。
 - 最终回答看起来很自信，但部分结果并没有验证。
 
-Edict Agent 的作用就是把多 agent 工作变成一套有治理结构的流程。它要求 Codex 先判断是否值得分派，再设置清晰角色，要求证据，检查 diff，在可行时运行测试，并在最终回答中说明残余风险。
+Edict Agent 的作用就是把多 agent 工作变成一套有治理结构的流程。它要求 Codex 先做轻量 qiushi 预检，优先寻找可交付的 worker 切片而不是空泛探索，再设置不重叠的所有权边界，要求证据，检查 diff，在可行时运行测试，并在最终回答中说明残余风险。
 
 ## 三省六部制的映射
 
@@ -166,10 +172,10 @@ Edict Agent 的作用就是把多 agent 工作变成一套有治理结构的流�
 | 三省六部逻辑 | Edict Agent 中的含义 |
 | --- | --- |
 | 皇帝下旨 | 用户目标、约束和验收标准 |
-| 中书省起草 | 主 agent 将需求转化为具体计划 |
+| 中书省起草 | 主 agent 将用户需求和 qiushi 预检转化为具体计划 |
 | 门下省审核/封驳 | Reviewer 或 Verifier 对假设和证据进行挑战 |
-| 尚书省统筹执行 | 主 agent 分派任务并协调执行 |
-| 六部分工办事 | 子 agent 承担调查、实现、审查或验证等边界清楚的任务 |
+| 尚书省统筹执行 | 主 agent 分派任务并协调整合 |
+| 六部分工办事 | Worker 处理边界清楚的交付切片；Explorer、Reviewer、Verifier 在有帮助时支持 |
 | 回奏 | 主 agent 汇报改动、验证结果、未知项和残余风险 |
 
 这套结构的重点是制造有益的制衡。规划和审核分离，执行有边界，验证必须显式进行。最终回答不是简单复述某个子 agent 的说法，而是主 agent 能够用证据支撑的结论。
@@ -180,10 +186,11 @@ Edict Agent 将 Codex 主 agent 设定为最终责任人。
 
 主 agent 必须：
 
-- 判断任务是否真的需要子 agent。
-- 将需求转化为验收标准和可能影响范围。
-- 只按照自然边界拆分任务。
-- 为子 agent 指定明确目标、上下文、范围、边界和输出要求。
+- 在分派前运行轻量 qiushi/workflows 预检。
+- 将用户需求和预检结论转化为验收标准和可能影响范围。
+- 只按照自然且不重叠的所有权边界拆分任务。
+- 将共享入口、配置、锁文件、生成清单和跨切片整合代码保留给一个明确负责人。
+- 为 worker 指定明确目标、上下文、独占范围、禁止范围和输出要求。
 - 将子 agent 的输出视为建议，而不是最终事实。
 - 在整合结论前重新阅读关键文件或证据。
 - 对代码改动检查最终 diff。
@@ -195,14 +202,14 @@ Edict Agent 将 Codex 主 agent 设定为最终责任人。
 
 - 调查不熟悉的代码、数据、文档或架构。
 - 审查方案、diff、结论、论文段落或 API 契约。
-- 在明确边界内实现某个子系统或产物。
+- 在明确边界内实现某个子系统、文件组、产物或文档章节。
 - 通过测试、复现步骤、日志、截图或来源证据验证行为。
 
 子 agent 不得：
 
 - 拥有最终答案。
 - 修改无关文件。
-- 在没有协调的情况下处理相互重叠的范围。
+- 在没有协调的情况下处理相互重叠的文件、目录、产物或文档章节。
 - 用自信替代证据。
 - 让主 agent 跳过审查。
 
@@ -210,52 +217,55 @@ Edict Agent 将 Codex 主 agent 设定为最终责任人。
 
 Edict Agent 定义了四类常见子 agent：
 
-- **Explorer**：只读调查架构、调用链、失败行为、数据来源或测试覆盖。
+- **Worker**：在独占边界内实现某个功能点、子系统、文件组、产物或文档章节。
+- **Explorer**：只读调查架构、调用链、失败行为、数据来源或测试覆盖。仅在边界尚不清楚时使用。
 - **Reviewer**：对方案、diff、论文段落、迁移、API 契约或 UI 行为进行怀疑式审查。
-- **Worker**：在清楚边界内实现一个子系统或产物。
 - **Verifier**：通过测试、复现、smoke check、渲染结果、日志或其他证据进行验证。
 
-默认策略是保守的：当任务还不清楚时，优先使用 Explorer 或 Reviewer；只有当边界清楚后，才使用 Worker。
+默认策略是面向交付但避免冲突：先寻找有用的 worker 切片，只有在边界还不清楚时使用 Explorer，最终整合仍由主 agent 负责。
 
 ## 严格行动计划
 
 当 Edict Agent 被触发时，Codex 遵循以下行动计划：
 
-1. **分拣任务**
-   判断任务是否足够复杂、高风险、跨模块、模糊或可并行，是否值得分派子 agent。
+1. **Qiushi 预检**
+   识别当前现状、关键约束、主要矛盾或瓶颈、验收标准、验证信号、候选交付切片，以及必须由主 agent 保留的共享产物。
 
 2. **拟定诏令**
-   将用户需求转化为目标、约束、验收标准、可能影响范围和验证命令。
+   将用户需求和预检结论转化为目标、约束、验收标准、可能影响范围、worker 切片和验证命令。
 
-3. **规划部司**
-   按照子系统、文件组、研究问题、测试面或产物类型等自然边界拆分工作。
+3. **规划文件独占部司**
+   按照子系统、文件组、研究问题、测试面、产物类型或文档章节等自然边界拆分工作，不分配相互重叠的写入所有权。
 
-4. **分派子 agent**
-   设定明确角色、目标、上下文、范围、边界和输出要求，避免多个子 agent 同时写同一范围。
+4. **选择并行度**
+   简单任务使用一个 agent；边界清楚的中型任务使用 2-6 个 worker；只有在高度可拆解时才扩大并行度。
 
-5. **审核关口**
-   将子 agent 输出视为建议。关键结论必须有证据。主 agent 需要重新阅读关键文件、日志、来源或 diff。
+5. **分派交付 worker**
+   设定明确角色、目标、上下文、独占范围、禁止范围、协作规则和输出要求。
 
-6. **整合与验证**
+6. **冲突关口**
+   在编辑开始前检查文件、目录、产物或文档章节所有权是否重叠。必要时重新切片，或将共享工作留给主 agent。
+
+7. **审核关口**
+   将 worker 输出视为建议。关键结论必须有证据。主 agent 需要重新阅读关键文件、日志、来源或 diff。
+
+8. **整合与验证**
    主 agent 负责最终编辑、检查 diff、在可行时运行相关检查，并解决不同结论之间的冲突。
 
-7. **最终审计**
-   在回答前检查范围、证据、diff、测试、未验证项和残余风险。
-
-8. **简明回奏**
-   最终回答说明分派了什么、改变或发现了什么、验证了什么、什么没有验证，以及还剩什么风险。
+9. **最终审计**
+   在回答前检查范围、证据、diff、测试、未验证项、残余风险和冲突规避情况。
 
 ## 严格审查关卡
 
 对于大型、面向用户、安全敏感、金融、法律、跨模块或高风险任务，Edict Agent 要求更严格的审查：
 
-- 重要结论应尽可能包含文件路径、行号、命令输出、来源链接、截图、日志或其他原始证据。
+- 重要的 worker 或 reviewer 结论应尽可能包含文件路径、行号、命令输出、来源链接、截图、日志或其他原始证据。
 - 代码改动必须检查最终 diff。
 - 在可行时应运行相关测试、类型检查、lint、渲染检查或 smoke check。
 - 如果无法运行检查，最终回答应说明哪些内容仍未验证。
 - 高风险任务在子 agent 可用时，至少应使用一个 Reviewer 或 Verifier。
 - “某个子 agent 是这么说的”不能作为充分证据。
-- 子 agent 之间结论冲突时，必须回到原始材料判断。
+- worker、reviewer 或 verifier 之间结论冲突时，必须回到原始材料判断。
 
 ## 安装
 
@@ -268,12 +278,14 @@ cp -R skill/edict-agent "${CODEX_HOME:-$HOME/.codex}/skills/edict-agent"
 
 然后启动新的 Codex 会话，让 Codex 发现这个 skill。
 
+当已安装 `workflows` skill 时，Edict Agent 可以将它作为 qiushi workflow 来源，通常路径是 `${CODEX_HOME:-$HOME/.codex}/skills/workflows/SKILL.md`。如果没有安装该 skill，Edict Agent 仍会按 `SKILL.md` 中描述的简化预检直接执行。
+
 ## 使用
 
 显式调用：
 
 ```text
-Use $edict-agent to decide whether to split this task across subagents and run strict review before reporting.
+Use $edict-agent to run a lightweight qiushi/workflows preflight, split this task into file-exclusive parallel worker slices where safe, then integrate and review with strict evidence gates.
 ```
 
 `skill/edict-agent/agents/openai.yaml` 已启用隐式调用，因此当任务大型、模糊、跨模块、高风险或适合并行时，Codex 也可以自动使用它。
