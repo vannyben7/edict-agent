@@ -30,7 +30,7 @@ Use parallel workers when at least two of these are true:
 ## Edict Flow
 
 1. Qiushi preflight.
-   Read and follow the installed `workflows` skill as the qiushi workflow source when available, typically at `${CODEX_HOME:-$HOME/.codex}/skills/workflows/SKILL.md`. If the workflows skill is not available, run the compact preflight below directly. Keep this preflight lightweight unless the task itself demands the full workflow. Produce:
+   Read and follow `${CODEX_HOME:-$HOME/.codex}/skills/qiushi-skill/references/workflows/METHOD.md` as the qiushi workflow source. Keep this preflight lightweight unless the task itself demands the full workflow. Produce:
    - current situation
    - key constraints
    - main contradiction or bottleneck
