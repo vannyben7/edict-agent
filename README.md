@@ -131,7 +131,7 @@ cp -R skill/edict-agent "${CODEX_HOME:-$HOME/.codex}/skills/edict-agent"
 
 Then start a new Codex session so the skill can be discovered.
 
-Edict Agent can use the installed `workflows` skill as its qiushi workflow source when available, typically at `${CODEX_HOME:-$HOME/.codex}/skills/workflows/SKILL.md`. If that skill is unavailable, Edict Agent still runs the compact preflight described in `SKILL.md`.
+Edict Agent uses the packaged workflow reference from an installed `qiushi-skill`, at `${CODEX_HOME:-$HOME/.codex}/skills/qiushi-skill/references/workflows/METHOD.md`. Install `qiushi-skill` alongside Edict Agent before invoking the qiushi preflight.
 
 ## Use
 
@@ -278,7 +278,7 @@ cp -R skill/edict-agent "${CODEX_HOME:-$HOME/.codex}/skills/edict-agent"
 
 然后启动新的 Codex 会话，让 Codex 发现这个 skill。
 
-当已安装 `workflows` skill 时，Edict Agent 可以将它作为 qiushi workflow 来源，通常路径是 `${CODEX_HOME:-$HOME/.codex}/skills/workflows/SKILL.md`。如果没有安装该 skill，Edict Agent 仍会按 `SKILL.md` 中描述的简化预检直接执行。
+Edict Agent 使用已安装 `qiushi-skill` 中的工作流参考文件，路径为 `${CODEX_HOME:-$HOME/.codex}/skills/qiushi-skill/references/workflows/METHOD.md`。调用求是预检前，请将 `qiushi-skill` 与 Edict Agent 一并安装。
 
 ## 使用
 

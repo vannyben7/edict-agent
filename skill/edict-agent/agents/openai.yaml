@@ -1,6 +1,6 @@
 interface:
   display_name: "Edict Agent"
-  short_description: "Qiushi preflight plus conflict-safe parallel delivery workers"
+  short_description: "先做求是预检，再安全拆分并行任务"
   default_prompt: "Use $edict-agent to run a lightweight qiushi/workflows preflight, split this task into file-exclusive parallel worker slices where safe, then integrate and review with strict evidence gates."
 policy:
   allow_implicit_invocation: true
