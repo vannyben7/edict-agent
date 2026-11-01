@@ -1,6 +1,7 @@
 ---
 name: edict-agent
-description: Use when Qoder is facing a large, ambiguous, cross-module, high-risk, or safely parallelizable project and should run a qiushi preflight before planning or delegation. Also use for Edict, 三省六部, 求是分析, Quest Experts, custom subagents, multi-agent orchestration, file-exclusive worker slices, conflict-safe implementation, reviewer/verifier gates, final audits, or evidence-based review of complex coding, research, documentation, and analysis tasks.
+description: Apply automatically before writing a plan, creating tasks, or delegating work whenever the request touches three or more files, modules, or deliverables, is cross-module or architectural, is hard to reverse, or can be split across workers; also apply when the user asks for orchestration, review gates, or a final audit. Do not wait to be invoked, and do not ask whether to run the preflight. Single-file edits, trivial fixes, and pure Q&A are exempt. Also use for Edict, 三省六部, 求是分析, Quest Experts, custom subagents, multi-agent orchestration, file-exclusive worker slices, conflict-safe implementation, reviewer/verifier gates, final audits, or evidence-based review of complex coding, research, documentation, and analysis tasks.
+when_to_use: Automatically before planning or delegating large, multi-file, cross-module, irreversible, or parallelizable work; also on explicit Edict, 三省六部, or 求是分析 requests. Skip for single-file edits, trivial fixes, and pure Q&A.
 ---
 
 # Edict Agent
